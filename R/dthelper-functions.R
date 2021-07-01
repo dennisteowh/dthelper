@@ -28,7 +28,7 @@ report.p <- function(p, dp = 3, start = NULL, end = NULL){
   }
 }
 
-
+#' @export
 report.ci <- function(est, se, cutoff = 1.96, dp=2, start = NULL, end = NULL){
   
   if(!is.numeric(est)|!is.numeric(se)){
@@ -41,7 +41,9 @@ report.ci <- function(est, se, cutoff = 1.96, dp=2, start = NULL, end = NULL){
   
 }
 
+
 # gets summary of lm object and returns specified statistics from coefficient table
+#' @export
 extract.lm <- function(lm.model, var = c("Estimate", "Std. Error", "t value", "Pr(>|t|)"), include.intercept = TRUE){
   lm.sum <- summary(lm.model)
   if(include.intercept == TRUE){
