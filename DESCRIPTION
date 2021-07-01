@@ -1,0 +1,5 @@
+Package: dthelper
+Type: Package
+Title: Dennis Helper Functions
+Version: 0.0.1.0
+RoxygenNote: 7.1.1
