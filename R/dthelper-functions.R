@@ -28,27 +28,51 @@ report.p <- function(p, dp = 3, start = NULL, end = NULL){
   }
 }
 
+#' Reporting confidence intervals
+#'
+#' @param est Estimate of Population Mean
+#' @param se Standard Error
+#' @param alpha Type I error. Two-tailed test is assumed
+#' @param dp Number of decimal places
+#' @param start Character string appended to start of output
+#' @param end Character string appended to end of output
+#' @return A character string reporting the lower and upper limits of CI
+#' @examples
+#' report.ci(1, .5);
+#' report.ci(1, .5, start = "95% CI:");
 #' @export
-report.ci <- function(est, se, cutoff = 1.96, dp=2, start = NULL, end = NULL){
+report.ci <- function(est, se, alpha = .05, dp=2, start = NULL, end = NULL){
   
   if(!is.numeric(est)|!is.numeric(se)){
     stop("both estimates and standard errors have to be numbers")
   } else if(se <= 0){
     stop("standard error has to be greater than 0")
   } else {
+    cutoff <- qnorm(1-alpha/2)
     return(paste0(start, "[", round(est-cutoff*se,dp), ", ", round(est+cutoff*se,2),"]",end) )
   }
   
 }
 
-
-# gets summary of lm object and returns specified statistics from coefficient table
+#' Extract statistics from lm object
+#' 
+#' gets summary() of lm object and returns specified statistics from coefficient table
+#'
+#' @param lm.model lm object
+#' @param var Variable. Set to "Estimate", "Std. Error", "t value", or "Pr(>|t|)"
+#' @param include.intercept If set to FALSE, ignores estimates from intercept
+#' @return A vector 
+#' @examples
+#' lm.model <- lm(y ~ x)
+#' extract.lm(lm.model, var = "Estimate")
+#' extract.lm(lm.model, var = "Std. Error")
+#' extract.lm(lm.model, var = "Pr(>|t|)")
 #' @export
 extract.lm <- function(lm.model, var = c("Estimate", "Std. Error", "t value", "Pr(>|t|)"), include.intercept = TRUE){
   lm.sum <- summary(lm.model)
   if(include.intercept == TRUE){
     coef.table <- lm.sum$coefficients
-  }else{
+  }else if(include.intercept == FALSE){
     coef.table <- lm.sum$coefficients[-1, ] # remove row with intercept
   }
   if(ncol(coef.table) != 4){
