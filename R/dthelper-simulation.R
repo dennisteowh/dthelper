@@ -64,6 +64,7 @@ plot.sampler <- function(sampler){
   plot(density(sampler))
 }
 
+
 #' Track Time 
 #' 
 #' Typically used in a loop. Reports progress at every 10% interval.
@@ -71,18 +72,16 @@ plot.sampler <- function(sampler){
 #' @param i Iteration number
 #' @param niter Total number of iterations in loop
 #' @param start Start time of loop. Use Sys.time() to get start time
-#' @param track If set to TRUE, reports progress at every 10% interval
+#' @param track If set to TRUE, reports progress at every 10\% interval
 #' @return None. Prints out time differences
-#' 
-#' @examples 
+#' @examples
 #' start = Sys.time()
 #' for(i in 1:100){
-#'   track.time(100, i, start)
+#'   track.time(i, 100, start)
 #' }
-#' 
 #' start = Sys.time()
 #' for(i in 1:100){
-#'   track.time(100, i, start, track =F)
+#'   track.time(i, 100, start, track =F)
 #' }
 #' 
 #' @export

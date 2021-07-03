@@ -13,7 +13,7 @@ track.time(i, niter, start, track = TRUE)
 
 \item{start}{Start time of loop. Use Sys.time() to get start time}
 
-\item{track}{If set to TRUE, reports progress at every 10% interval}
+\item{track}{If set to TRUE, reports progress at every 10\% interval}
 }
 \value{
 None. Prints out time differences
@@ -24,12 +24,11 @@ Typically used in a loop. Reports progress at every 10% interval.
 \examples{
 start = Sys.time()
 for(i in 1:100){
-  track.time(100, i, start)
+  track.time(i, 100, start)
 }
-
 start = Sys.time()
 for(i in 1:100){
-  track.time(100, i, start, track =F)
+  track.time(i, 100, start, track =F)
 }
 
 }

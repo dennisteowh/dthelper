@@ -4,13 +4,7 @@
 \alias{gather.keep}
 \title{Row Bind Matching Column Names}
 \usage{
-gather.keep(
-  df,
-  keep = NULL,
-  var.to.gather = NULL,
-  key = "key",
-  value = "value"
-)
+\method{gather}{keep}(df, keep = NULL, var.to.gather = NULL, key = "key", value = "value")
 }
 \arguments{
 \item{df}{data.frame object}

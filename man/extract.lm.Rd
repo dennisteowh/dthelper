@@ -4,7 +4,7 @@
 \alias{extract.lm}
 \title{Extract statistics from lm object}
 \usage{
-extract.lm(
+\method{extract}{lm}(
   lm.model,
   var = c("Estimate", "Std. Error", "t value", "Pr(>|t|)"),
   include.intercept = TRUE
