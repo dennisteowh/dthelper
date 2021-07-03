@@ -1,10 +1,10 @@
 # dthelper
 
-To install:
+To install:  
 
-library(devtools)
-install_github("dennisteowh/dthelper")
+library(devtools)  
+install_github("dennisteowh/dthelper")  
 
-To load:
+To load:  
 
-library(dthelper)
+library(dthelper)  
