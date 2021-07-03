@@ -1,4 +1,4 @@
-# dthelper
+# dthelper R package
 
 To install:  
  
