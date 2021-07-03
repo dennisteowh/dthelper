@@ -1,234 +1,3 @@
-locate.element <- function(form){  # gets position of variables
-  
-  between <- str_locate_all(form, "[[:space:]]|[[+]]|[[-]]|[[*]]|[[~]]")[[1]][,1] 
-  betw.brack <- str_locate_all(form, "(?<=\\{).+?(?=\\})")[[1]] # wont work if within {}
-  
-  if (length(betw.brack > 0)){
-    ignore <- c()
-    for(i in 1:nrow(betw.brack)) {
-      ignore <- c(ignore, betw.brack[i, 1]:betw.brack[i, 2])
-    }
-    
-    between <- between[!between %in% ignore]
-    
-  } else {NULL}
-  
-  length <- 1:nchar(form)
-  text <- length[!length %in% between]
-  
-  return(unname(text))
-}
-
-locate.operator <- function(form){# gets position of operators
-  
-  between <- str_locate_all(form, "[[+]]|[[-]]|[[*]]|[[~]]")[[1]][,1]
-  betw.brack <- str_locate_all(form, "(?<=\\{).+?(?=\\})")[[1]] # wont work if within {}
-  
-  if (length(betw.brack > 0)){
-    
-    ignore <- c()
-    
-    for(i in 1:nrow(betw.brack)) {
-      ignore <- c(ignore, betw.brack[i, 1]:betw.brack[i, 2])
-    }
-    
-    between <- between[!between %in% ignore]
-    
-  } else {NULL}
-  
-  return(unname(between))
-}
-
-break.formulae <- function(form){ # extracts main variables
-  
-  require(stringr)
-  
-  ## remove white spaces
-  form <- gsub(" ", "", form)
-  
-  text <- locate.element(form)
-  
-  group.text <- list()
-  
-  for (i in 1:length(text)){
-    
-    if( i == 1 ) { # store first char
-      
-      group.text[[1]] <- text[1]
-      count <- 1
-      
-    } else if ( text[i] == text[i-1] + 1 ) {
-      
-      group.text[[count]] <- c(group.text[[count]], text[i])
-      
-    } else if ( text[i] != text[i-1] + 1 ) {
-      
-      group.text[[count + 1]] <- text[i]
-      count <- count + 1
-      
-    }
-  }
-  elements <- c()
-  
-  for (i in 1:length(group.text)){
-    
-    elements <- c(elements, substr(form, min(group.text[[i]]), max(group.text[[i]])))
-    
-  }
-  
-  return (elements )
-}
-
-extract.variable <- function(form, df){ # extract variables from data according to formulae
-  
-  template <- break.formulae(form)
-  
-  # change {} to .
-  for (i in 1:length(template)){
-    
-    betw.brack <- str_locate_all(template[i], "(?<=\\{).+?(?=\\})")[[1]]
-    
-    # replacing {} with .
-    if (length(betw.brack) > 0){ 
-      
-      expr <- paste0("{", substr(template[i], betw.brack[1,1], betw.brack[1, 2]), "}")
-      
-      template[i] <- gsub(
-        pattern = expr,
-        replacement = ".", template[[i]], fixed = T)
-      
-      
-    } 
-  }
-  
-  # replacing X with .
-  for (i in 1:length(template)){
-    
-    template[[i]] <- gsub("X", ".", template[[i]] )
-    
-  }
-  
-  # getting rid of redundant templates
-  template <- as.vector(unlist(unique(template)))
-  
-  # initialising list
-  variable.list <- vector(mode = "list", length = length(template))
-  
-  names(variable.list) <- template
-  
-  require(gtools)
-  
-  for (i in 1:length(template)){
-    
-    variable.list[[i]] <- mixedsort(colnames(df)[grep(names(variable.list)[i], colnames(df))])
-  }
-  
-  return(as.vector(unlist(variable.list)) )
-  
-}
-
-simple.operation <- function(expr) { # performs simple operations given a math statement
-  
-  expr <- gsub(" ", "", expr)
-  
-  if(length(locate.operator(expr))==0){
-    return(expr)
-  }
-  
-  operator <- substr(expr, locate.operator(expr), locate.operator(expr)) 
-  
-  first <- break.formulae(expr)[1]
-  second <- break.formulae(expr)[2]
-  
-  if(operator == "+"){
-    
-    as.numeric(first) + as.numeric(second)
-    
-  } else if (operator == "-"){
-    
-    as.numeric(first) - as.numeric(second)
-    
-  } else if (operator == "*"){
-    
-    as.numeric(first) * as.numeric(second)
-    
-  } 
-}
-
-construct.formulae <- function(form, variables, df){
-  
-  formulae.list <- list()
-  
-  for ( i in 1:length(variables)){
-    
-    betw.brack <- str_locate_all(form, "(?<=\\{).+?(?=\\})")[[1]] # position between {}
-    
-    # dealing with {}
-    if (length(betw.brack) > 0){
-      
-      expr <- c() # initialise
-      
-      for (j in 1:nrow(betw.brack)){ # for each {}
-        expr <- c(expr, substr(form, betw.brack[j,1], betw.brack[j, 2]))
-      }
-      
-      expr <- gsub ("X", i, expr)
-      
-      for (j in  1:length(expr)){ # for each expression
-        expr[j] <- simple.operation(expr[j] )
-      } 
-      
-      
-      ### sub expr back to {}
-      temp.form <- form
-      for (j in 1:nrow(betw.brack)){ # for each {}
-        
-        temp.expr <- paste0("{", substr(form, betw.brack[j,1], betw.brack[j, 2]), "}")
-        temp.form <- gsub(temp.expr, expr[j], temp.form, fixed = T)
-        
-      }
-      
-      ### sub X to i
-      temp.form <- gsub("X", i, temp.form)
-      
-      temp.form.elements <- as.vector(unlist(break.formulae(temp.form)))
-      
-      check <- sum(temp.form.elements %in% colnames(df))
-      
-      if ( check == length(temp.form.elements)){ # if variables don't match data, then skip
-        
-        formulae.list <- c(formulae.list, as.formula(temp.form))
-        
-      }
-      
-      
-    } else { # if no {}
-      
-      ### sub X to i
-      temp.form <- form
-      
-      temp.form <- gsub("X", i, temp.form)
-      
-      temp.form.elements <- as.vector(unlist(break.formulae(temp.form)))
-      
-      check <- sum(temp.form.elements %in% colnames(df))
-      
-      if ( check == length(temp.form.elements)){
-        
-        formulae.list <- c(formulae.list, as.formula(temp.form))
-        
-      }
-      
-    }
-    
-  }
-  
-  return(formulae.list)
-  
-}
-
-
-
 #' Compute Root Mean Square Error
 #'
 #' @param x Input vector object
@@ -424,6 +193,236 @@ regress.with <- function(form, df, group, output = c("Estimate", "Std. Error", "
 #' 
 #' @export
 abstract.regression <- function(form, df){
+  
+  locate.element <- function(form){  # gets position of variables
+    
+    between <- str_locate_all(form, "[[:space:]]|[[+]]|[[-]]|[[*]]|[[~]]")[[1]][,1] 
+    betw.brack <- str_locate_all(form, "(?<=\\{).+?(?=\\})")[[1]] # wont work if within {}
+    
+    if (length(betw.brack > 0)){
+      ignore <- c()
+      for(i in 1:nrow(betw.brack)) {
+        ignore <- c(ignore, betw.brack[i, 1]:betw.brack[i, 2])
+      }
+      
+      between <- between[!between %in% ignore]
+      
+    } else {NULL}
+    
+    length <- 1:nchar(form)
+    text <- length[!length %in% between]
+    
+    return(unname(text))
+  }
+  
+  locate.operator <- function(form){# gets position of operators
+    
+    between <- str_locate_all(form, "[[+]]|[[-]]|[[*]]|[[~]]")[[1]][,1]
+    betw.brack <- str_locate_all(form, "(?<=\\{).+?(?=\\})")[[1]] # wont work if within {}
+    
+    if (length(betw.brack > 0)){
+      
+      ignore <- c()
+      
+      for(i in 1:nrow(betw.brack)) {
+        ignore <- c(ignore, betw.brack[i, 1]:betw.brack[i, 2])
+      }
+      
+      between <- between[!between %in% ignore]
+      
+    } else {NULL}
+    
+    return(unname(between))
+  }
+  
+  break.formulae <- function(form){ # extracts main variables
+    
+    require(stringr)
+    
+    ## remove white spaces
+    form <- gsub(" ", "", form)
+    
+    text <- locate.element(form)
+    
+    group.text <- list()
+    
+    for (i in 1:length(text)){
+      
+      if( i == 1 ) { # store first char
+        
+        group.text[[1]] <- text[1]
+        count <- 1
+        
+      } else if ( text[i] == text[i-1] + 1 ) {
+        
+        group.text[[count]] <- c(group.text[[count]], text[i])
+        
+      } else if ( text[i] != text[i-1] + 1 ) {
+        
+        group.text[[count + 1]] <- text[i]
+        count <- count + 1
+        
+      }
+    }
+    elements <- c()
+    
+    for (i in 1:length(group.text)){
+      
+      elements <- c(elements, substr(form, min(group.text[[i]]), max(group.text[[i]])))
+      
+    }
+    
+    return (elements )
+  }
+  
+  extract.variable <- function(form, df){ # extract variables from data according to formulae
+    
+    template <- break.formulae(form)
+    
+    # change {} to .
+    for (i in 1:length(template)){
+      
+      betw.brack <- str_locate_all(template[i], "(?<=\\{).+?(?=\\})")[[1]]
+      
+      # replacing {} with .
+      if (length(betw.brack) > 0){ 
+        
+        expr <- paste0("{", substr(template[i], betw.brack[1,1], betw.brack[1, 2]), "}")
+        
+        template[i] <- gsub(
+          pattern = expr,
+          replacement = ".", template[[i]], fixed = T)
+        
+        
+      } 
+    }
+    
+    # replacing X with .
+    for (i in 1:length(template)){
+      
+      template[[i]] <- gsub("X", ".", template[[i]] )
+      
+    }
+    
+    # getting rid of redundant templates
+    template <- as.vector(unlist(unique(template)))
+    
+    # initialising list
+    variable.list <- vector(mode = "list", length = length(template))
+    
+    names(variable.list) <- template
+    
+    require(gtools)
+    
+    for (i in 1:length(template)){
+      
+      variable.list[[i]] <- mixedsort(colnames(df)[grep(names(variable.list)[i], colnames(df))])
+    }
+    
+    return(as.vector(unlist(variable.list)) )
+    
+  }
+  
+  simple.operation <- function(expr) { # performs simple operations given a math statement
+    
+    expr <- gsub(" ", "", expr)
+    
+    if(length(locate.operator(expr))==0){
+      return(expr)
+    }
+    
+    operator <- substr(expr, locate.operator(expr), locate.operator(expr)) 
+    
+    first <- break.formulae(expr)[1]
+    second <- break.formulae(expr)[2]
+    
+    if(operator == "+"){
+      
+      as.numeric(first) + as.numeric(second)
+      
+    } else if (operator == "-"){
+      
+      as.numeric(first) - as.numeric(second)
+      
+    } else if (operator == "*"){
+      
+      as.numeric(first) * as.numeric(second)
+      
+    } 
+  }
+  
+  construct.formulae <- function(form, variables, df){
+    
+    formulae.list <- list()
+    
+    for ( i in 1:length(variables)){
+      
+      betw.brack <- str_locate_all(form, "(?<=\\{).+?(?=\\})")[[1]] # position between {}
+      
+      # dealing with {}
+      if (length(betw.brack) > 0){
+        
+        expr <- c() # initialise
+        
+        for (j in 1:nrow(betw.brack)){ # for each {}
+          expr <- c(expr, substr(form, betw.brack[j,1], betw.brack[j, 2]))
+        }
+        
+        expr <- gsub ("X", i, expr)
+        
+        for (j in  1:length(expr)){ # for each expression
+          expr[j] <- simple.operation(expr[j] )
+        } 
+        
+        
+        ### sub expr back to {}
+        temp.form <- form
+        for (j in 1:nrow(betw.brack)){ # for each {}
+          
+          temp.expr <- paste0("{", substr(form, betw.brack[j,1], betw.brack[j, 2]), "}")
+          temp.form <- gsub(temp.expr, expr[j], temp.form, fixed = T)
+          
+        }
+        
+        ### sub X to i
+        temp.form <- gsub("X", i, temp.form)
+        
+        temp.form.elements <- as.vector(unlist(break.formulae(temp.form)))
+        
+        check <- sum(temp.form.elements %in% colnames(df))
+        
+        if ( check == length(temp.form.elements)){ # if variables don't match data, then skip
+          
+          formulae.list <- c(formulae.list, as.formula(temp.form))
+          
+        }
+        
+        
+      } else { # if no {}
+        
+        ### sub X to i
+        temp.form <- form
+        
+        temp.form <- gsub("X", i, temp.form)
+        
+        temp.form.elements <- as.vector(unlist(break.formulae(temp.form)))
+        
+        check <- sum(temp.form.elements %in% colnames(df))
+        
+        if ( check == length(temp.form.elements)){
+          
+          formulae.list <- c(formulae.list, as.formula(temp.form))
+          
+        }
+        
+      }
+      
+    }
+    
+    return(formulae.list)
+    
+  }
+  
   elements <- break.formulae(form)
   
   variables <- extract.variable(form, df) # variables from data
