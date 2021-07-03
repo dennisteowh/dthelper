@@ -4,7 +4,7 @@
 \alias{recode.multiple}
 \title{Recode Multiple Variables}
 \usage{
-\method{recode}{multiple}(df, var, from, to = 1:length(from), fun = as.numeric)
+recode.multiple(df, var, from, to = 1:length(from), fun = as.numeric)
 }
 \arguments{
 \item{df}{data.frame object}

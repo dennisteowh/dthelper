@@ -4,7 +4,7 @@
 \alias{collapse.var}
 \title{Collapse Multiple Variables into a single Column}
 \usage{
-\method{collapse}{var}(df, var = colnames(df), return.conflicts = FALSE)
+collapse.var(df, var = colnames(df), return.conflicts = FALSE)
 }
 \arguments{
 \item{df}{data.frame object}
