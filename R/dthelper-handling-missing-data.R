@@ -101,7 +101,7 @@ estimate.listwise.deletion <- function(df, var = colnames(df), dp = 2, return.nu
   
   df.deleted <- na.omit(df[,var])
   na.count <- nrow(df) - nrow(df.deleted)
-  na.perc <- na.count/nrow(df)
+  na.perc <- na.count*100/nrow(df)
   
   if(print.text == TRUE){
     output <- paste0(na.count, " (", round(na.perc,dp), "%) missing observations")
