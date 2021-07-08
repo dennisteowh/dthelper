@@ -9,6 +9,32 @@ rmse <- function(x, na.rm=T){
   return(sqrt(mean(x^2, na.rm = na.rm)))
 }
 
+#' Compute Weighted Sum
+#' 
+#' Weights are normalised before weighted sum is computed.
+#' 
+#' @param x Input vector object
+#' @param weights weight associated to each input value of x
+#' @param na.rm If set to TRUE, NAs are ignored in computation
+#' @return scalar value
+#' 
+#' @examples 
+#' x <- c(1,2,3)
+#' weights <- c(1,1,1) # equal weights
+#' weighted.sum(x, weights)
+#' 
+#' weights <- c(5, 1, 1) # unequal weights
+#' weight.sum(x, weights)
+#' 
+#' @export
+weighted.sum <- function(x, weights, na.rm = T){
+  weights.total <- sum(weights, na.rm=na.rm)
+  weights.prop <- weights/weights.total
+  
+  output <- sum(weights.prop*x)
+  return(output)
+}
+
 #' Correlation with Grouping Variable
 #' 
 #' Perform correlations with the main variables of interest.

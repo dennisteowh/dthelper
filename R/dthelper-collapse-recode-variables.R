@@ -38,6 +38,29 @@ recode.multiple <- function(df, var, from, to = 1:length(from), fun = as.numeric
   return(df)
 } 
 
+#' Relabel Single Variable
+#' 
+#' @param x vector object
+#' @param from Original scale (order of input needs to match desired scale)
+#' @param to Desired scale (order of input needs to match original scale). Defaults to integer scale starting from 1
+#' @return vector object
+#' 
+#' @examples 
+#' x <- c("Strongly Disagree","Disagree", "Neutral"," Agree", "Strongly Agree")
+#' 
+#' relabel(x, from = c("Strongly Disagree","Disagree", "Neutral"," Agree", "Strongly Agree"),
+#' to = c("SD","D","N","A","SA"))
+#'
+#'@export
+relabel <- function(x, from, to = 1:length(from)){
+  
+  for(i in 1:length(from)){ # for each response value
+    x[x==from[i]] <- to[i]
+  }
+  
+  return(x)
+} 
+
 
 #' Collapse Multiple Variables into a single Column
 #' 
