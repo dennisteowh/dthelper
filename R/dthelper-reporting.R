@@ -1,3 +1,16 @@
+#' Report
+#' 
+#' Short-hand for round function
+#' 
+#' @param x Input vector object
+#' @param dp Number of decimal places
+#' @return vector object
+#' 
+#' @export
+report <- function(x, dp=2){
+  return(round(x, dp=dp))
+}
+
 #' Reporting p values
 #'
 #' @param p Input p value
@@ -22,9 +35,7 @@ report.p <- function(p, dp = 3, start = NULL, end = NULL){
     stop("p cannot be greater than 1")
   } else if (p < 0) {
     stop("p cannot be less than 0")
-  } else if (p == 0) {
-    stop("p cannot be equals to 0")
-  }
+  } 
 }
 
 #' Reporting confidence intervals
