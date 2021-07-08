@@ -2,7 +2,7 @@
 % Please edit documentation in R/dthelper-data-wrangling.R
 \name{gather.keep}
 \alias{gather.keep}
-\title{Row Bind Matching Column Names}
+\title{Gather and Keep}
 \usage{
 gather.keep(
   df,
@@ -27,10 +27,7 @@ gather.keep(
 data.frame object
 }
 \description{
-row binds a vector to an existing data.frame object (data.frame can be empty).
-The vector should be named.
-This function ensures that the vector values are added to the column
-that shares their respectives names.
+gather function that allows you to retain some of the existing columns
 }
 \examples{
 set.seed(100)

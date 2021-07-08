@@ -100,7 +100,7 @@ add.count <- function (df, rename = "N") {
 #' rbind.match(df, x, names = c("g","f","c","b","a")) 
 #' 
 #' @export
-rbind.match <- function(df.old, x.new, names=colnames(df.old)){ # x is vector
+rowbind.match <- function(df.old, x.new, names=colnames(df.old)){ # x is vector
   
   # initialise names 
   if(nrow(df.old)==0){
@@ -127,12 +127,9 @@ rbind.match <- function(df.old, x.new, names=colnames(df.old)){ # x is vector
   
 }
 
-#' Row Bind Matching Column Names
+#' Gather and Keep
 #' 
-#' row binds a vector to an existing data.frame object (data.frame can be empty).
-#' The vector should be named.
-#' This function ensures that the vector values are added to the column
-#' that shares their respectives names.
+#' gather function that allows you to retain some of the existing columns
 #'
 #' @param df data.frame object
 #' @param keep Variables that shouldn't be gathered

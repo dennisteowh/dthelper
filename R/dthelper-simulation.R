@@ -33,7 +33,7 @@ resample <- function(x,n){
 #' plot.convergence(flips)
 #' 
 #' @export
-plot.convergence <- function(x){
+plotting.convergence <- function(x){
   require(ggplot2)
   df <- data.frame(
     estimate = x,
@@ -60,7 +60,7 @@ plot.convergence <- function(x){
 #' plot.sampler(runif(1000, min = 0, max = 1))
 #' 
 #' @export
-plot.sampler <- function(sampler){
+plotting.sampler <- function(sampler){
   plot(density(sampler))
 }
 
