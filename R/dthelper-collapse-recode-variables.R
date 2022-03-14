@@ -85,63 +85,42 @@ relabel <- function(x, from, to = 1:length(from)){
 #' step-by-step tutorial.
 #'
 #' @export
-collapse.var <- function(df, var = colnames(df), return.conflicts = FALSE) {
-  
-  ## identifying conflicting columns (NAs non-inclusive)
+collapse.var <- function (df, var = colnames(df), return.conflicts = FALSE) 
+{
   df_temp <- df[, var]
-  df_conflicts <- c() ## initialise vector to store conflicts
-  
-  for(i in 1:nrow(df_temp)){
-    
-    df_non_duplicates <- NA # initialise on each row
-    
-    ## remove duplicates from these rows
-    df_non_duplicates <- df_temp[i , ][as.vector(!duplicated(t(df_temp[i , ])))]
-    ## remove missing data
+  df_conflicts <- c()
+  for (i in 1:nrow(df_temp)) {
+    df_non_duplicates <- NA
+    df_non_duplicates <- df_temp[i, ][as.vector(!duplicated(t(df_temp[i, 
+    ])))]
     df_non_duplicates <- df_non_duplicates[!is.na(df_non_duplicates)]
-    
-    ## are there conflicting values???
-    if (length(df_non_duplicates) > 1){ ## assuming there are no conflicts, this length should be 1
-      
+    if (length(df_non_duplicates) > 1) {
       df_conflicts <- c(df_conflicts, i)
-      
-    } 
-    
-  }
-  
-  ## reports if there are conflicts
-  if (length(df_conflicts) > 0){
-    warning("there are non-NA conflicts in the input variables")
-    
-  } else {
-    message("there are no conflicts in the input variables")
-  }
-  
-  df_extract <- df[,var]
-  result <- rep(NA, nrow(df_extract))
-  #For each specified category column
-  for (i in 1:nrow(df_extract)){
-    for (j in 1:ncol(df_extract)){
-      #if the row of the specified column is not missing
-      if(!is.na(df_extract[i,j])){
-        #then slot that value into the result
-        result[i] <- df[i,j]
-      } 
     }
   }
-  
-  if (length(df_conflicts) > 0 & return.conflicts==TRUE){
-    
+  if (length(df_conflicts) > 0) {
+    warning("there are non-NA conflicts in the input variables")
+  }
+  else {
+    message("there are no conflicts in the input variables")
+  }
+  df_extract <- df[, var]
+  result <- rep(NA, nrow(df_extract))
+  for (i in 1:nrow(df_extract)) {
+    for (j in 1:ncol(df_extract)) {
+      if (!is.na(df_extract[i, j])) {
+        result[i] <- unlist(df_extract[i, j])
+      }
+    }
+  }
+  if (length(df_conflicts) > 0 & return.conflicts == TRUE) {
     message("returning conflicts as list object. Output CANNOT be new column of df")
     conflict.df = df[df_conflicts, ]
     conflict.df$conflict.rows <- df_conflicts
-    
     return(list(result = result, conflict.df = conflict.df))
-    
-  } else {
+  }
+  else {
     return(result)
   }
-  
 }
-
 
